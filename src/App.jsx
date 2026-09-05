@@ -38,36 +38,36 @@ export default function App() {
         id: 1, 
         top: '12%', 
         left: '25%', 
-        url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80',
-        mensagem: 'Nosso primeiro momento juntos...'
+        url: 'https://i.imgur.com/LHa0dc3.png',
+        mensagem: 'Entregando felicidade pro nosso filhinho! 💖'
       },
       { 
         id: 2, 
         top: '28%', 
         left: '75%', 
-        url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=600&q=80',
-        mensagem: 'O sorriso que me encanta.'
+        url: 'https://i.imgur.com/AgAlIkN.png',
+        mensagem: 'O sorriso que me encanta. 🥺'
       },
       { 
         id: 3, 
         top: '48%', 
         left: '15%', 
-        url: 'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?auto=format&fit=crop&w=600&q=80',
-        mensagem: 'Cada dia ao seu lado é especial.'
+        url: 'https://i.imgur.com/49e7w9B.png',
+        mensagem: 'Cada dia ao seu lado é especial. 💛'
       },
       { 
         id: 4, 
         top: '65%', 
         left: '80%', 
-        url: 'https://images.unsplash.com/photo-1501901609772-df0848060b33?auto=format&fit=crop&w=600&q=80',
-        mensagem: 'Minha paz.'
+        url: 'https://i.imgur.com/ZHivlFU.png',
+        mensagem: 'Minha paz. 🪷'
       },
       { 
         id: 5, 
         top: '82%', 
         left: '35%', 
-        url: 'https://images.unsplash.com/photo-1494774157365-9e04c6720e47?auto=format&fit=crop&w=600&q=80',
-        mensagem: 'Para sempre nós.'
+        url: 'https://i.imgur.com/1w2j5Ez.png',
+        mensagem: 'Para sempre nós. 💗'
       }
     ];
 
@@ -224,13 +224,13 @@ export default function App() {
                 ========================================================================= */}
             <div className="space-y-4 text-purple-50 font-light leading-relaxed">
               <p>
-                [Escreva aqui o seu primeiro parágrafo de declaração...]
+                Cada estrela faz parte da nossa história. Cada momento.
               </p>
               <p>
-                [Escreva aqui o segundo parágrafo. Assim como estas estrelas, você ilumina minha vida de uma forma que eu nunca imaginei ser possível.]
+                Assim como estas estrelas, você ilumina minha vida de uma forma que eu nunca imaginei ser possível.
               </p>
               <p>
-                [Finalize com uma frase de impacto, eu te amo, etc...]
+                Obrigado por ser a luz da minha vida. Te amo! 💖
               </p>
             </div>
           </div>
