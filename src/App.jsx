@@ -205,7 +205,7 @@ export default function App() {
           >
             {/* Estrela fotográfica: ponto luminoso + raios de difração */}
             <div
-              className={`photo-star ${jaVista ? 'photo-star-seen' : ''}`}
+              className={`photo-star ${jaVista ? 'photo-star-seen' : 'photo-star-unseen'}`}
               style={{
                 width: `${estrela.tamanho}px`,
                 height: `${estrela.tamanho}px`,
@@ -392,10 +392,15 @@ export default function App() {
           display: flex;
           align-items: center;
           justify-content: center;
-          opacity: 0.48;
-          filter: drop-shadow(0 0 2px rgba(205, 222, 248, 0.34));
-          animation: photo-star-breathe 4.6s ease-in-out infinite;
           transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
+          will-change: opacity, filter, transform;
+        }
+
+        /* Ainda não clicada: brilho discreto, mas pulsando para ser fácil de encontrar */
+        .photo-star-unseen {
+          opacity: 0.56;
+          filter: drop-shadow(0 0 3px rgba(205, 222, 248, 0.42));
+          animation: photo-star-unseen-pulse 2.9s ease-in-out infinite;
         }
 
         .photo-star-glow {
@@ -466,6 +471,7 @@ export default function App() {
         .photo-star-seen {
           opacity: 1;
           filter: drop-shadow(0 0 8px rgba(220, 234, 255, 0.95));
+          animation: photo-star-seen-breathe 4.6s ease-in-out infinite;
         }
 
         .photo-star-seen .photo-star-core {
@@ -569,8 +575,21 @@ export default function App() {
           60% { transform: scale(1.08); filter: brightness(1.16); }
         }
 
-        @keyframes photo-star-breathe {
-          0%, 100% { transform: scale(0.97); }
+        @keyframes photo-star-unseen-pulse {
+          0%, 100% {
+            opacity: 0.50;
+            transform: scale(0.96);
+            filter: drop-shadow(0 0 2px rgba(205, 222, 248, 0.30)) brightness(0.92);
+          }
+          50% {
+            opacity: 0.76;
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 7px rgba(215, 231, 255, 0.68)) brightness(1.18);
+          }
+        }
+
+        @keyframes photo-star-seen-breathe {
+          0%, 100% { transform: scale(0.98); }
           50% { transform: scale(1.035); }
         }
 
