@@ -440,13 +440,6 @@ export default function App() {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="memory-star-mark" aria-hidden="true">
-              <span className="memory-star-aura"></span>
-              <span className="memory-star-ray memory-star-ray-v"></span>
-              <span className="memory-star-ray memory-star-ray-h"></span>
-              <span className="memory-star-core"></span>
-            </div>
-
             <div className="relative z-10 aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-950/80 memory-photo-frame">
               <img
                 src={modalAtivo.dados.url}
@@ -794,32 +787,32 @@ export default function App() {
 
         .photo-star-seen {
           opacity: 1;
-          filter: drop-shadow(0 0 10px rgba(255, 228, 157, 0.9));
+          filter: drop-shadow(0 0 10px rgba(218, 233, 255, 0.9));
           animation: photo-star-seen-breathe 4.2s ease-in-out infinite, photo-star-click-sparkle 0.78s cubic-bezier(.2,.8,.2,1) 1;
         }
 
         .photo-star-seen .photo-star-core {
           width: 5px;
           height: 5px;
-          background: #fff8d6;
+          background: #ffffff;
           box-shadow:
-            0 0 4px 2px rgba(255,248,214,1),
-            0 0 12px 4px rgba(255,231,158,0.92),
-            0 0 28px 9px rgba(255,209,102,0.30);
+            0 0 4px 2px rgba(255,255,255,1),
+            0 0 12px 4px rgba(218,233,255,0.92),
+            0 0 28px 9px rgba(176,207,250,0.24);
         }
 
         .photo-star-seen .photo-star-glow {
           width: 54%;
           height: 54%;
-          background: rgba(255, 241, 194, 0.1);
+          background: rgba(232, 241, 255, 0.10);
           box-shadow:
-            0 0 15px 7px rgba(255, 235, 171, 0.20),
-            0 0 34px 14px rgba(255, 215, 128, 0.08);
+            0 0 15px 7px rgba(218, 233, 255, 0.20),
+            0 0 34px 14px rgba(170, 202, 246, 0.08);
         }
 
         .photo-star-seen .photo-star-ray {
           opacity: 0.92;
-          filter: sepia(0.22) saturate(1.16);
+          filter: none;
         }
 
         .final-star {
@@ -1059,61 +1052,6 @@ export default function App() {
           background: linear-gradient(180deg, transparent 72%, rgba(3,7,15,.22));
         }
 
-        .memory-star-mark {
-          position: absolute;
-          z-index: 20;
-          width: 48px;
-          height: 48px;
-          left: 50%;
-          top: -23px;
-          transform: translateX(-50%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: none;
-          animation: memory-star-float 3s ease-in-out infinite;
-        }
-
-        .memory-star-aura {
-          position: absolute;
-          width: 65%;
-          height: 65%;
-          border-radius: 9999px;
-          background: rgba(255, 241, 194, 0.08);
-          box-shadow: 0 0 16px 7px rgba(255,235,171,.18), 0 0 36px 14px rgba(255,215,128,.08);
-          filter: blur(3px);
-        }
-
-        .memory-star-core {
-          position: absolute;
-          width: 6px;
-          height: 6px;
-          border-radius: 9999px;
-          background: #fff8d6;
-          box-shadow: 0 0 4px 2px rgba(255,248,214,1), 0 0 12px 4px rgba(255,231,158,.9), 0 0 28px 8px rgba(255,209,102,.28);
-        }
-
-        .memory-star-ray {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          border-radius: 9999px;
-        }
-
-        .memory-star-ray-v {
-          width: 1px;
-          height: 90%;
-          transform: translate(-50%,-50%);
-          background: linear-gradient(180deg, transparent, rgba(255,242,204,.72), #fff8d6, rgba(255,242,204,.72), transparent);
-        }
-
-        .memory-star-ray-h {
-          height: 1px;
-          width: 90%;
-          transform: translate(-50%,-50%);
-          background: linear-gradient(90deg, transparent, rgba(255,242,204,.72), #fff8d6, rgba(255,242,204,.72), transparent);
-        }
-
         @keyframes modal-backdrop-in {
           from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
           to { opacity: 1; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
@@ -1150,11 +1088,6 @@ export default function App() {
         @keyframes modal-tiny-star {
           0%,100% { opacity: .22; transform: scale(.75); }
           50% { opacity: .95; transform: scale(1.35); }
-        }
-
-        @keyframes memory-star-float {
-          0%,100% { transform: translateX(-50%) scale(.96); filter: brightness(.95); }
-          50% { transform: translateX(-50%) scale(1.08); filter: brightness(1.17); }
         }
 
         @keyframes natural-twinkle {
