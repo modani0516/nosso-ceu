@@ -39,12 +39,15 @@ export default function App() {
 
   const youtubeVideoId = extrairYoutubeId(YOUTUBE_VIDEO);
   const youtubeIframeRef = useRef(null);
+  const fecharModalTimeoutRef = useRef(null);
 
   const [estrelasFundo, setEstrelasFundo] = useState([]);
   const [fotosVistas, setFotosVistas] = useState(new Set());
   const [modalAtivo, setModalAtivo] = useState(null); // Pode ser null, ou um objeto da foto, ou 'final'
   const [animarEntrada, setAnimarEntrada] = useState(false);
   const [musicaMutada, setMusicaMutada] = useState(false);
+  const [modalFechando, setModalFechando] = useState(false);
+  const [origemModal, setOrigemModal] = useState({ x: '50%', y: '50%' });
 
   // Gere estrelas de fundo aleatórias apenas uma vez quando o componente montar
   useEffect(() => {
@@ -236,6 +239,8 @@ export default function App() {
     const novasVistas = new Set(fotosVistas);
     novasVistas.add(estrela.id);
     setFotosVistas(novasVistas);
+    setOrigemModal({ x: estrela.left, y: estrela.top });
+    setModalFechando(false);
     setModalAtivo({ tipo: 'foto', dados: estrela });
   };
 
@@ -254,6 +259,8 @@ export default function App() {
   };
 
   const handleClickFinal = () => {
+    setOrigemModal({ x: estrelaFinal.left, y: estrelaFinal.top });
+    setModalFechando(false);
     setModalAtivo({ tipo: 'final' });
     setMusicaMutada(false);
 
@@ -278,8 +285,19 @@ export default function App() {
   };
 
   const fecharModal = () => {
-    setModalAtivo(null);
+    if (!modalAtivo || modalFechando) return;
+
+    setModalFechando(true);
+    window.clearTimeout(fecharModalTimeoutRef.current);
+    fecharModalTimeoutRef.current = window.setTimeout(() => {
+      setModalAtivo(null);
+      setModalFechando(false);
+    }, 420);
   };
+
+  useEffect(() => {
+    return () => window.clearTimeout(fecharModalTimeoutRef.current);
+  }, []);
 
   // Verifica se todas as 5 fotos foram vistas
   const todasVistas = fotosVistas.size === estrelasFotos.length;
@@ -394,30 +412,51 @@ export default function App() {
       {/* Fundo escuro quando um modal está aberto */}
       {modalAtivo && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity"
+          className={`fixed inset-0 z-40 modal-backdrop ${modalFechando ? 'modal-backdrop-closing' : 'modal-backdrop-opening'}`}
+          style={{ '--origin-x': origemModal.x, '--origin-y': origemModal.y }}
           onClick={fecharModal}
-        ></div>
+        >
+          <span className="modal-origin-flare"></span>
+        </div>
       )}
 
       {/* Modal de Foto */}
       {modalAtivo?.tipo === 'foto' && (
-        <div className="fixed inset-0 mobile-safe-modal z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-white/20 pointer-events-auto w-full max-w-sm transform animate-in fade-in zoom-in duration-300 animate-float">
+        <div
+          className="fixed inset-0 mobile-safe-modal z-50 flex items-center justify-center pointer-events-none"
+          style={{ '--origin-x': origemModal.x, '--origin-y': origemModal.y }}
+        >
+          <div className={`celestial-modal photo-memory-modal pointer-events-auto w-full max-w-sm ${modalFechando ? 'celestial-modal-closing' : 'celestial-modal-opening'}`}>
+            <div className="celestial-modal-light"></div>
+            <div className="celestial-modal-stars" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i>
+            </div>
+
             <button
               onClick={fecharModal}
-              className="absolute -top-4 -right-4 bg-slate-800 text-white p-2 rounded-full shadow-lg hover:bg-slate-700 transition-colors"
+              className="celestial-close-button"
+              aria-label="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden bg-slate-800">
+
+            <div className="memory-star-mark" aria-hidden="true">
+              <span className="memory-star-aura"></span>
+              <span className="memory-star-ray memory-star-ray-v"></span>
+              <span className="memory-star-ray memory-star-ray-h"></span>
+              <span className="memory-star-core"></span>
+            </div>
+
+            <div className="relative z-10 aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-950/80 memory-photo-frame">
               <img
                 src={modalAtivo.dados.url}
                 alt="Nossa lembrança"
                 className="object-cover w-full h-full"
               />
+              <div className="absolute inset-0 pointer-events-none memory-photo-vignette"></div>
             </div>
-            {/* Mensagem opcional abaixo da foto */}
-            <p className="text-center text-white mt-4 font-serif italic text-lg shadow-black drop-shadow-md">
+
+            <p className="relative z-10 text-center text-slate-100/95 mt-5 mb-1 px-2 font-serif italic text-lg leading-relaxed drop-shadow-[0_1px_10px_rgba(0,0,0,0.75)]">
               {modalAtivo.dados.mensagem}
             </p>
           </div>
@@ -427,7 +466,10 @@ export default function App() {
       {/* Modal da Declaração Final */}
       {modalAtivo?.tipo === 'final' && (
         <div className="fixed inset-0 mobile-safe-modal z-50 flex items-center justify-center pointer-events-none">
-          <div className="relative overflow-hidden bg-slate-950/75 backdrop-blur-2xl p-8 rounded-3xl shadow-[0_0_70px_rgba(160,195,255,0.14)] border border-slate-200/15 pointer-events-auto w-full max-w-md transform animate-in fade-in zoom-in duration-500 text-center">
+          <div
+            className={`celestial-modal final-message-modal pointer-events-auto w-full max-w-md text-center ${modalFechando ? 'celestial-modal-closing' : 'celestial-modal-opening'}`}
+            style={{ '--origin-x': origemModal.x, '--origin-y': origemModal.y }}
+          >
             <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(150,190,255,0.10),transparent_48%)]"></div>
             <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-sky-100/[0.035] blur-3xl pointer-events-none"></div>
             <div className="relative z-10">
@@ -470,7 +512,6 @@ export default function App() {
                 ) : (
                   <Volume2 className="w-4 h-4" />
                 )}
-                <span>{musicaMutada ? 'Ativar som' : 'Som ligado'}</span>
               </button>
             )}
             </div>
@@ -493,31 +534,33 @@ export default function App() {
 
         .audio-toggle-button {
           margin: 1.5rem auto 0;
+          width: 2.7rem;
+          height: 2.7rem;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 0.5rem;
-          padding: 0.55rem 0.8rem;
+          padding: 0;
           border-radius: 9999px;
           border: 1px solid rgba(226, 232, 240, 0.14);
           background: rgba(15, 23, 42, 0.36);
-          color: rgba(226, 232, 240, 0.72);
-          font-size: 0.72rem;
-          letter-spacing: 0.04em;
+          color: rgba(226, 232, 240, 0.78);
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
-          box-shadow: 0 0 22px rgba(148, 184, 235, 0.06);
-          transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.015) inset,
+            0 0 24px rgba(148, 184, 235, 0.07);
+          transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .audio-toggle-button:hover {
-          background: rgba(30, 41, 59, 0.5);
-          color: rgba(255, 255, 255, 0.92);
-          border-color: rgba(226, 232, 240, 0.22);
+          background: rgba(30, 41, 59, 0.52);
+          color: #fff;
+          border-color: rgba(226, 232, 240, 0.24);
+          box-shadow: 0 0 26px rgba(175, 204, 245, 0.12);
         }
 
         .audio-toggle-button:active {
-          transform: scale(0.96);
+          transform: scale(0.92);
         }
 
         html, body, #root {
@@ -751,31 +794,32 @@ export default function App() {
 
         .photo-star-seen {
           opacity: 1;
-          filter: drop-shadow(0 0 8px rgba(220, 234, 255, 0.95));
-          animation: photo-star-seen-breathe 4.6s ease-in-out infinite;
+          filter: drop-shadow(0 0 10px rgba(255, 228, 157, 0.9));
+          animation: photo-star-seen-breathe 4.2s ease-in-out infinite, photo-star-click-sparkle 0.78s cubic-bezier(.2,.8,.2,1) 1;
         }
 
         .photo-star-seen .photo-star-core {
-          width: 4px;
-          height: 4px;
-          background: #ffffff;
+          width: 5px;
+          height: 5px;
+          background: #fff8d6;
           box-shadow:
-            0 0 3px 1px rgba(255,255,255,1),
-            0 0 10px 3px rgba(217,233,255,0.94),
-            0 0 24px 7px rgba(157,194,244,0.38);
+            0 0 4px 2px rgba(255,248,214,1),
+            0 0 12px 4px rgba(255,231,158,0.92),
+            0 0 28px 9px rgba(255,209,102,0.30);
         }
 
         .photo-star-seen .photo-star-glow {
-          width: 38%;
-          height: 38%;
-          background: rgba(241, 247, 255, 0.3);
+          width: 54%;
+          height: 54%;
+          background: rgba(255, 241, 194, 0.1);
           box-shadow:
-            0 0 10px 4px rgba(213, 230, 255, 0.3),
-            0 0 24px 10px rgba(147, 184, 235, 0.11);
+            0 0 15px 7px rgba(255, 235, 171, 0.20),
+            0 0 34px 14px rgba(255, 215, 128, 0.08);
         }
 
         .photo-star-seen .photo-star-ray {
-          opacity: 0.9;
+          opacity: 0.92;
+          filter: sepia(0.22) saturate(1.16);
         }
 
         .final-star {
@@ -850,6 +894,269 @@ export default function App() {
           transform: translate(-50%, -50%) rotate(-45deg);
         }
 
+        .modal-backdrop {
+          background:
+            radial-gradient(circle at var(--origin-x) var(--origin-y), rgba(255, 237, 190, 0.08), transparent 13%),
+            rgba(0, 0, 0, 0.72);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          overflow: hidden;
+        }
+
+        .modal-backdrop-opening {
+          animation: modal-backdrop-in 0.5s ease both;
+        }
+
+        .modal-backdrop-closing {
+          animation: modal-backdrop-out 0.42s ease both;
+          pointer-events: none;
+        }
+
+        .modal-origin-flare {
+          position: absolute;
+          left: var(--origin-x);
+          top: var(--origin-y);
+          width: 12px;
+          height: 12px;
+          margin: -6px 0 0 -6px;
+          border-radius: 9999px;
+          background: #fff7d4;
+          box-shadow:
+            0 0 10px 4px rgba(255, 245, 210, 0.95),
+            0 0 34px 14px rgba(255, 220, 145, 0.34),
+            0 0 100px 42px rgba(145, 180, 230, 0.12);
+          pointer-events: none;
+        }
+
+        .modal-backdrop-opening .modal-origin-flare {
+          animation: origin-flare-in 0.7s cubic-bezier(.18,.8,.2,1) both;
+        }
+
+        .modal-backdrop-closing .modal-origin-flare {
+          animation: origin-flare-out 0.42s ease both;
+        }
+
+        .celestial-modal {
+          position: relative;
+          overflow: visible;
+          border-radius: 1.75rem;
+          padding: 1rem;
+          background:
+            radial-gradient(circle at 50% 0%, rgba(148, 186, 238, 0.095), transparent 38%),
+            linear-gradient(145deg, rgba(8, 15, 29, 0.90), rgba(2, 7, 17, 0.84));
+          border: 1px solid rgba(226, 232, 240, 0.15);
+          box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.56),
+            0 0 70px rgba(160, 195, 255, 0.11),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          transform-origin: center;
+          will-change: transform, opacity, filter;
+        }
+
+        .photo-memory-modal {
+          padding: 1rem 1rem 1.15rem;
+        }
+
+        .final-message-modal {
+          overflow: hidden;
+          padding: 2rem;
+        }
+
+        .celestial-modal-opening {
+          animation: celestial-modal-in 0.62s cubic-bezier(.16,.85,.22,1) both;
+        }
+
+        .celestial-modal-closing {
+          animation: celestial-modal-out 0.42s cubic-bezier(.55,.02,.86,.45) both;
+          pointer-events: none;
+        }
+
+        .celestial-modal-light {
+          position: absolute;
+          inset: -1px;
+          border-radius: inherit;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .celestial-modal-light::before {
+          content: '';
+          position: absolute;
+          width: 180px;
+          height: 180px;
+          left: 50%;
+          top: -120px;
+          transform: translateX(-50%);
+          border-radius: 9999px;
+          background: rgba(180, 208, 247, 0.11);
+          filter: blur(38px);
+        }
+
+        .celestial-modal-stars {
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          overflow: hidden;
+          pointer-events: none;
+          opacity: 0.75;
+        }
+
+        .celestial-modal-stars i {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          border-radius: 9999px;
+          background: rgba(242, 247, 255, 0.9);
+          box-shadow: 0 0 7px rgba(210, 229, 255, 0.72);
+          animation: modal-tiny-star 3.5s ease-in-out infinite;
+        }
+
+        .celestial-modal-stars i:nth-child(1) { left: 9%; top: 9%; animation-delay: .2s; }
+        .celestial-modal-stars i:nth-child(2) { right: 12%; top: 16%; animation-delay: 1.1s; }
+        .celestial-modal-stars i:nth-child(3) { left: 6%; top: 53%; animation-delay: 2s; }
+        .celestial-modal-stars i:nth-child(4) { right: 7%; top: 69%; animation-delay: .7s; }
+        .celestial-modal-stars i:nth-child(5) { left: 18%; bottom: 8%; animation-delay: 1.7s; }
+
+        .celestial-close-button {
+          position: absolute;
+          z-index: 30;
+          top: -0.72rem;
+          right: -0.72rem;
+          width: 2.45rem;
+          height: 2.45rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 9999px;
+          color: rgba(226, 232, 240, 0.86);
+          border: 1px solid rgba(226, 232, 240, 0.16);
+          background: rgba(7, 13, 25, 0.88);
+          box-shadow: 0 7px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(160, 195, 255, 0.07);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          transition: transform .2s ease, color .2s ease, border-color .2s ease;
+        }
+
+        .celestial-close-button:hover {
+          color: #fff;
+          border-color: rgba(226,232,240,.28);
+          transform: scale(1.06);
+        }
+
+        .celestial-close-button:active {
+          transform: scale(.9);
+        }
+
+        .memory-photo-frame {
+          border: 1px solid rgba(226, 232, 240, 0.11);
+          box-shadow: 0 15px 40px rgba(0,0,0,.42), 0 0 30px rgba(132, 171, 226, 0.06);
+        }
+
+        .memory-photo-vignette {
+          box-shadow: inset 0 0 38px rgba(0,0,0,.24);
+          background: linear-gradient(180deg, transparent 72%, rgba(3,7,15,.22));
+        }
+
+        .memory-star-mark {
+          position: absolute;
+          z-index: 20;
+          width: 48px;
+          height: 48px;
+          left: 50%;
+          top: -23px;
+          transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          animation: memory-star-float 3s ease-in-out infinite;
+        }
+
+        .memory-star-aura {
+          position: absolute;
+          width: 65%;
+          height: 65%;
+          border-radius: 9999px;
+          background: rgba(255, 241, 194, 0.08);
+          box-shadow: 0 0 16px 7px rgba(255,235,171,.18), 0 0 36px 14px rgba(255,215,128,.08);
+          filter: blur(3px);
+        }
+
+        .memory-star-core {
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          border-radius: 9999px;
+          background: #fff8d6;
+          box-shadow: 0 0 4px 2px rgba(255,248,214,1), 0 0 12px 4px rgba(255,231,158,.9), 0 0 28px 8px rgba(255,209,102,.28);
+        }
+
+        .memory-star-ray {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          border-radius: 9999px;
+        }
+
+        .memory-star-ray-v {
+          width: 1px;
+          height: 90%;
+          transform: translate(-50%,-50%);
+          background: linear-gradient(180deg, transparent, rgba(255,242,204,.72), #fff8d6, rgba(255,242,204,.72), transparent);
+        }
+
+        .memory-star-ray-h {
+          height: 1px;
+          width: 90%;
+          transform: translate(-50%,-50%);
+          background: linear-gradient(90deg, transparent, rgba(255,242,204,.72), #fff8d6, rgba(255,242,204,.72), transparent);
+        }
+
+        @keyframes modal-backdrop-in {
+          from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+          to { opacity: 1; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        }
+
+        @keyframes modal-backdrop-out {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+
+        @keyframes origin-flare-in {
+          0% { transform: scale(.25); opacity: 0; }
+          25% { transform: scale(1.9); opacity: 1; }
+          100% { transform: scale(7); opacity: 0; }
+        }
+
+        @keyframes origin-flare-out {
+          0% { transform: scale(4); opacity: 0; }
+          65% { opacity: .75; }
+          100% { transform: scale(.3); opacity: 0; }
+        }
+
+        @keyframes celestial-modal-in {
+          0% { opacity: 0; transform: translateY(22px) scale(.78); filter: blur(8px); }
+          58% { opacity: 1; transform: translateY(-3px) scale(1.018); filter: blur(0); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes celestial-modal-out {
+          0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+          100% { opacity: 0; transform: translateY(16px) scale(.78); filter: blur(7px); }
+        }
+
+        @keyframes modal-tiny-star {
+          0%,100% { opacity: .22; transform: scale(.75); }
+          50% { opacity: .95; transform: scale(1.35); }
+        }
+
+        @keyframes memory-star-float {
+          0%,100% { transform: translateX(-50%) scale(.96); filter: brightness(.95); }
+          50% { transform: translateX(-50%) scale(1.08); filter: brightness(1.17); }
+        }
+
         @keyframes natural-twinkle {
           0%, 100% { transform: scale(0.94); filter: brightness(0.88); }
           45% { transform: scale(1); filter: brightness(1); }
@@ -867,6 +1174,13 @@ export default function App() {
             transform: scale(1.08);
             filter: drop-shadow(0 0 7px rgba(215, 231, 255, 0.68)) brightness(1.18);
           }
+        }
+
+        @keyframes photo-star-click-sparkle {
+          0% { transform: scale(.78) rotate(0deg); filter: brightness(.9); }
+          36% { transform: scale(1.48) rotate(8deg); filter: brightness(1.55); }
+          62% { transform: scale(.94) rotate(-3deg); filter: brightness(1.18); }
+          100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
         }
 
         @keyframes photo-star-seen-breathe {
