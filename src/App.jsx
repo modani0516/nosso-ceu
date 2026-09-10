@@ -279,22 +279,25 @@ export default function App() {
       {/* Modal da Declaração Final */}
       {modalAtivo?.tipo === 'final' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
-          <div className="bg-gradient-to-br from-indigo-900/90 to-purple-900/90 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_50px_rgba(167,139,250,0.4)] border border-purple-300/30 pointer-events-auto w-full max-w-md transform animate-in fade-in zoom-in duration-500 text-center">
+          <div className="relative overflow-hidden bg-slate-950/75 backdrop-blur-2xl p-8 rounded-3xl shadow-[0_0_70px_rgba(160,195,255,0.14)] border border-slate-200/15 pointer-events-auto w-full max-w-md transform animate-in fade-in zoom-in duration-500 text-center">
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(150,190,255,0.10),transparent_48%)]"></div>
+            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-sky-100/[0.035] blur-3xl pointer-events-none"></div>
+            <div className="relative z-10">
             <button
               onClick={fecharModal}
-              className="absolute top-4 right-4 text-purple-200 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-20 text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
 
-            <Heart className="w-12 h-12 text-pink-400 mx-auto mb-6 animate-pulse" fill="currentColor" />
+            <Heart className="w-10 h-10 text-slate-200/80 mx-auto mb-6 final-heart" fill="currentColor" />
 
             <h1 className="text-2xl font-serif text-white mb-6 tracking-wide">Para meu amor</h1>
 
             {/* =========================================================================
                 SEU TEXTO DE DECLARAÇÃO VAI AQUI
                 ========================================================================= */}
-            <div className="space-y-4 text-purple-50 font-light leading-relaxed">
+            <div className="space-y-4 text-slate-200/85 font-light leading-relaxed">
               <p>
                 Cada estrela faz parte da nossa história. Cada momento.
               </p>
@@ -304,6 +307,7 @@ export default function App() {
               <p>
                 Obrigado por ser a luz da minha vida. Te amo! 💖
               </p>
+            </div>
             </div>
           </div>
         </div>
@@ -573,6 +577,17 @@ export default function App() {
         @keyframes final-star-breathe {
           0%, 100% { transform: scale(0.96); filter: brightness(0.95); }
           50% { transform: scale(1.06); filter: brightness(1.15); }
+        }
+
+
+        .final-heart {
+          filter: drop-shadow(0 0 10px rgba(210, 228, 255, 0.18));
+          animation: finalHeartGlow 3.4s ease-in-out infinite;
+        }
+
+        @keyframes finalHeartGlow {
+          0%, 100% { opacity: 0.68; transform: scale(1); }
+          50% { opacity: 0.95; transform: scale(1.035); }
         }
 
         @keyframes float {
