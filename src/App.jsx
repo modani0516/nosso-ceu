@@ -1,11 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { X, Heart } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Heart, Volume2, VolumeX } from 'lucide-react';
 
 export default function App() {
+  // Cole aqui o link completo do YouTube OU apenas o ID do vídeo.
+  // Exemplos aceitos:
+  // https://www.youtube.com/watch?v=dQw4w9WgXcQ
+  // https://youtu.be/dQw4w9WgXcQ
+  // dQw4w9WgXcQ
+  const YOUTUBE_VIDEO = 'https://youtu.be/A6lHB7EZvYQ';
+
+  const extrairYoutubeId = (valor) => {
+    if (!valor || valor.includes('COLE_AQUI')) return '';
+
+    // Se já for somente o ID do vídeo.
+    if (/^[a-zA-Z0-9_-]{11}$/.test(valor.trim())) return valor.trim();
+
+    try {
+      const url = new URL(valor.trim());
+
+      if (url.hostname.includes('youtu.be')) {
+        return url.pathname.split('/').filter(Boolean)[0] || '';
+      }
+
+      if (url.hostname.includes('youtube.com')) {
+        const idQuery = url.searchParams.get('v');
+        if (idQuery) return idQuery;
+
+        const partes = url.pathname.split('/').filter(Boolean);
+        const indiceEmbed = partes.findIndex((parte) => ['embed', 'shorts', 'live'].includes(parte));
+        if (indiceEmbed !== -1 && partes[indiceEmbed + 1]) return partes[indiceEmbed + 1];
+      }
+    } catch (erro) {
+      return '';
+    }
+
+    return '';
+  };
+
+  const youtubeVideoId = extrairYoutubeId(YOUTUBE_VIDEO);
+  const youtubeIframeRef = useRef(null);
+
   const [estrelasFundo, setEstrelasFundo] = useState([]);
   const [fotosVistas, setFotosVistas] = useState(new Set());
   const [modalAtivo, setModalAtivo] = useState(null); // Pode ser null, ou um objeto da foto, ou 'final'
   const [animarEntrada, setAnimarEntrada] = useState(false);
+  const [musicaMutada, setMusicaMutada] = useState(false);
 
   // Gere estrelas de fundo aleatórias apenas uma vez quando o componente montar
   useEffect(() => {
@@ -200,8 +239,42 @@ export default function App() {
     setModalAtivo({ tipo: 'foto', dados: estrela });
   };
 
+  const enviarComandoYoutube = (func, args = []) => {
+    const iframe = youtubeIframeRef.current;
+    if (!iframe?.contentWindow || !youtubeVideoId) return;
+
+    iframe.contentWindow.postMessage(
+      JSON.stringify({
+        event: 'command',
+        func,
+        args,
+      }),
+      '*'
+    );
+  };
+
   const handleClickFinal = () => {
     setModalAtivo({ tipo: 'final' });
+    setMusicaMutada(false);
+
+    // O player já está carregado invisivelmente. Como estes comandos são enviados
+    // diretamente a partir do toque/clique do usuário, há maior compatibilidade
+    // com as políticas de autoplay dos navegadores móveis.
+    enviarComandoYoutube('setVolume', [100]);
+    enviarComandoYoutube('unMute');
+    enviarComandoYoutube('playVideo');
+  };
+
+  const alternarMudo = () => {
+    if (musicaMutada) {
+      enviarComandoYoutube('setVolume', [100]);
+      enviarComandoYoutube('unMute');
+      enviarComandoYoutube('playVideo');
+      setMusicaMutada(false);
+    } else {
+      enviarComandoYoutube('mute');
+      setMusicaMutada(true);
+    }
   };
 
   const fecharModal = () => {
@@ -214,6 +287,20 @@ export default function App() {
   return (
     // Container principal: fixo, tela cheia, céu noturno profundo
     <div className={`fixed inset-0 app-viewport overflow-hidden transition-opacity duration-1000 ${animarEntrada ? 'opacity-100' : 'opacity-0'}`}>
+
+      {/* Player do YouTube invisível: somente o áudio será percebido.
+          Troque YOUTUBE_VIDEO no início do arquivo pelo link ou ID desejado. */}
+      {youtubeVideoId && (
+        <iframe
+          ref={youtubeIframeRef}
+          title="Trilha sonora"
+          src={`https://www.youtube.com/embed/${youtubeVideoId}?enablejsapi=1&playsinline=1&controls=0&rel=0&modestbranding=1`}
+          allow="autoplay; encrypted-media"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="youtube-audio-player"
+        />
+      )}
 
       {/* Fundo com profundidade de um céu noturno real */}
       <div className="absolute inset-0 night-sky-base pointer-events-none"></div>
@@ -369,6 +456,23 @@ export default function App() {
                 Obrigado por ser a luz da minha vida. Te amo! 💖
               </p>
             </div>
+
+            {youtubeVideoId && (
+              <button
+                type="button"
+                onClick={alternarMudo}
+                className="audio-toggle-button"
+                aria-label={musicaMutada ? 'Ativar som' : 'Mutar som'}
+                title={musicaMutada ? 'Ativar som' : 'Mutar som'}
+              >
+                {musicaMutada ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+                <span>{musicaMutada ? 'Ativar som' : 'Som ligado'}</span>
+              </button>
+            )}
             </div>
           </div>
         </div>
@@ -376,6 +480,46 @@ export default function App() {
 
       {/* CSS para o céu, estrelas e animações personalizadas */}
       <style dangerouslySetInnerHTML={{__html: `
+        .youtube-audio-player {
+          position: fixed;
+          width: 1px;
+          height: 1px;
+          left: -9999px;
+          bottom: 0;
+          opacity: 0;
+          pointer-events: none;
+          border: 0;
+        }
+
+        .audio-toggle-button {
+          margin: 1.5rem auto 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 0.55rem 0.8rem;
+          border-radius: 9999px;
+          border: 1px solid rgba(226, 232, 240, 0.14);
+          background: rgba(15, 23, 42, 0.36);
+          color: rgba(226, 232, 240, 0.72);
+          font-size: 0.72rem;
+          letter-spacing: 0.04em;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: 0 0 22px rgba(148, 184, 235, 0.06);
+          transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+        }
+
+        .audio-toggle-button:hover {
+          background: rgba(30, 41, 59, 0.5);
+          color: rgba(255, 255, 255, 0.92);
+          border-color: rgba(226, 232, 240, 0.22);
+        }
+
+        .audio-toggle-button:active {
+          transform: scale(0.96);
+        }
+
         html, body, #root {
           margin: 0 !important;
           padding: 0 !important;
