@@ -50,6 +50,67 @@ export default function App() {
     setTimeout(() => setAnimarEntrada(true), 100);
   }, []);
 
+  // Ajustes globais para ocupar toda a tela em celulares e evitar faixas brancas
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+
+    html.style.margin = '0';
+    html.style.padding = '0';
+    html.style.width = '100%';
+    html.style.height = '100%';
+    html.style.backgroundColor = '#010207';
+    html.style.overflow = 'hidden';
+    html.style.colorScheme = 'dark';
+
+    body.style.margin = '0';
+    body.style.padding = '0';
+    body.style.width = '100%';
+    body.style.height = '100%';
+    body.style.minHeight = '100dvh';
+    body.style.backgroundColor = '#010207';
+    body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+
+    if (root) {
+      root.style.width = '100%';
+      root.style.height = '100%';
+      root.style.minHeight = '100dvh';
+      root.style.backgroundColor = '#010207';
+      root.style.overflow = 'hidden';
+    }
+
+    // Permite que o conteúdo avance até as bordas físicas da tela (notch / Dynamic Island).
+    let viewport = document.querySelector('meta[name="viewport"]');
+    if (!viewport) {
+      viewport = document.createElement('meta');
+      viewport.setAttribute('name', 'viewport');
+      document.head.appendChild(viewport);
+    }
+    viewport.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover'
+    );
+
+    // Faz a interface do navegador usar uma cor compatível com o céu quando suportado.
+    let themeColor = document.querySelector('meta[name="theme-color"]');
+    if (!themeColor) {
+      themeColor = document.createElement('meta');
+      themeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(themeColor);
+    }
+    themeColor.setAttribute('content', '#010207');
+
+    let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStatusBar) {
+      appleStatusBar = document.createElement('meta');
+      appleStatusBar.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+      document.head.appendChild(appleStatusBar);
+    }
+    appleStatusBar.setAttribute('content', 'black-translucent');
+  }, []);
+
   // =========================================================================
   // DADOS DAS ESTRELAS / FOTOS (VOCÊ VAI EDITAR AS URLs AQUI DEPOIS)
   // =========================================================================
@@ -152,7 +213,7 @@ export default function App() {
 
   return (
     // Container principal: fixo, tela cheia, céu noturno profundo
-    <div className={`fixed inset-0 overflow-hidden transition-opacity duration-1000 ${animarEntrada ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`fixed inset-0 app-viewport overflow-hidden transition-opacity duration-1000 ${animarEntrada ? 'opacity-100' : 'opacity-0'}`}>
 
       {/* Fundo com profundidade de um céu noturno real */}
       <div className="absolute inset-0 night-sky-base pointer-events-none"></div>
@@ -187,7 +248,7 @@ export default function App() {
       ))}
 
       {/* Título discreto no topo */}
-      <div className="absolute top-6 left-0 right-0 text-center z-10 pointer-events-none">
+      <div className="absolute mobile-safe-title left-0 right-0 text-center z-10 pointer-events-none">
         <p className="text-slate-200/55 text-sm tracking-[0.28em] font-light font-serif drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
           {todasVistas ? "O céu está completo" : "Toque nas estrelas..."}
         </p>
@@ -253,7 +314,7 @@ export default function App() {
 
       {/* Modal de Foto */}
       {modalAtivo?.tipo === 'foto' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
+        <div className="fixed inset-0 mobile-safe-modal z-50 flex items-center justify-center pointer-events-none">
           <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-white/20 pointer-events-auto w-full max-w-sm transform animate-in fade-in zoom-in duration-300 animate-float">
             <button
               onClick={fecharModal}
@@ -278,7 +339,7 @@ export default function App() {
 
       {/* Modal da Declaração Final */}
       {modalAtivo?.tipo === 'final' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
+        <div className="fixed inset-0 mobile-safe-modal z-50 flex items-center justify-center pointer-events-none">
           <div className="relative overflow-hidden bg-slate-950/75 backdrop-blur-2xl p-8 rounded-3xl shadow-[0_0_70px_rgba(160,195,255,0.14)] border border-slate-200/15 pointer-events-auto w-full max-w-md transform animate-in fade-in zoom-in duration-500 text-center">
             <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(150,190,255,0.10),transparent_48%)]"></div>
             <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-sky-100/[0.035] blur-3xl pointer-events-none"></div>
@@ -315,6 +376,82 @@ export default function App() {
 
       {/* CSS para o céu, estrelas e animações personalizadas */}
       <style dangerouslySetInnerHTML={{__html: `
+        html, body, #root {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          min-height: 100% !important;
+          background: #010207 !important;
+          overflow: hidden !important;
+          overscroll-behavior: none;
+        }
+
+        html {
+          color-scheme: dark;
+        }
+
+        body {
+          position: fixed;
+          inset: 0;
+          min-height: 100dvh !important;
+          -webkit-text-size-adjust: 100%;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        #root {
+          min-height: 100dvh !important;
+          isolation: isolate;
+        }
+
+        .app-viewport {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
+          width: 100dvw;
+          height: 100vh;
+          height: 100svh;
+          height: 100dvh;
+          min-height: 100dvh;
+          background: #010207;
+          overflow: hidden;
+          overscroll-behavior: none;
+          touch-action: manipulation;
+        }
+
+        .mobile-safe-title {
+          top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+          padding-left: calc(env(safe-area-inset-left, 0px) + 1rem);
+          padding-right: calc(env(safe-area-inset-right, 0px) + 1rem);
+        }
+
+        .mobile-safe-modal {
+          padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+          padding-right: calc(env(safe-area-inset-right, 0px) + 1.5rem);
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+          padding-left: calc(env(safe-area-inset-left, 0px) + 1.5rem);
+        }
+
+        @supports not (height: 100dvh) {
+          .app-viewport, body, #root {
+            height: 100vh !important;
+            min-height: 100vh !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .mobile-safe-title {
+            top: calc(env(safe-area-inset-top, 0px) + 1rem);
+          }
+
+          .mobile-safe-modal {
+            padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+            padding-right: calc(env(safe-area-inset-right, 0px) + 1rem);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+            padding-left: calc(env(safe-area-inset-left, 0px) + 1rem);
+          }
+        }
+
         .night-sky-base {
           background:
             radial-gradient(ellipse at 50% 115%, rgba(35, 57, 91, 0.54) 0%, rgba(10, 21, 39, 0.2) 35%, transparent 62%),
