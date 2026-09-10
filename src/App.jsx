@@ -57,45 +57,72 @@ export default function App() {
     const base = [
       {
         id: 1,
-        top: '12%',
-        left: '25%',
         url: 'https://i.imgur.com/LHa0dc3.png',
         mensagem: 'Entregando felicidade pro nosso filhinho! 💖'
       },
       {
         id: 2,
-        top: '28%',
-        left: '75%',
         url: 'https://i.imgur.com/AgAlIkN.png',
         mensagem: 'O sorriso que me encanta. 🥺'
       },
       {
         id: 3,
-        top: '48%',
-        left: '15%',
         url: 'https://i.imgur.com/49e7w9B.png',
         mensagem: 'Cada dia ao seu lado é especial. 💛'
       },
       {
         id: 4,
-        top: '65%',
-        left: '80%',
         url: 'https://i.imgur.com/ZHivlFU.png',
         mensagem: 'Minha paz. 🪷'
       },
       {
         id: 5,
-        top: '82%',
-        left: '35%',
         url: 'https://i.imgur.com/1w2j5Ez.png',
         mensagem: 'Para sempre nós. 💗'
       }
     ];
 
-    // Mantém os mesmos pontos interativos, com pequenas diferenças de brilho/tamanho
-    return base.map(estrela => ({
+    // Gera novas posições a cada carregamento, evitando estrelas muito próximas
+    // entre si e deixando o centro livre para a estrela final.
+    const posicoes = [];
+    const distanciaMinima = 20;
+
+    const criarPosicao = () => ({
+      top: Math.random() * 72 + 14,  // 14% a 86%
+      left: Math.random() * 82 + 9,  // 9% a 91%
+    });
+
+    for (let i = 0; i < base.length; i++) {
+      let posicao;
+      let tentativas = 0;
+
+      do {
+        posicao = criarPosicao();
+        tentativas += 1;
+
+        const muitoPertoDeOutra = posicoes.some((anterior) => {
+          const dx = posicao.left - anterior.left;
+          const dy = posicao.top - anterior.top;
+          return Math.sqrt(dx * dx + dy * dy) < distanciaMinima;
+        });
+
+        const distanciaDoCentro = Math.sqrt(
+          Math.pow(posicao.left - 50, 2) + Math.pow(posicao.top - 50, 2)
+        );
+        const pertoDaEstrelaFinal = distanciaDoCentro < 15;
+
+        if (!muitoPertoDeOutra && !pertoDaEstrelaFinal) break;
+      } while (tentativas < 150);
+
+      posicoes.push(posicao);
+    }
+
+    return base.map((estrela, index) => ({
       ...estrela,
-      tamanho: Math.floor(Math.random() * 8) + 24
+      top: `${posicoes[index].top}%`,
+      left: `${posicoes[index].left}%`,
+      tamanho: Math.floor(Math.random() * 7) + 24,
+      animationDelay: `${Math.random() * 2.5}s`,
     }));
   });
 
@@ -182,6 +209,7 @@ export default function App() {
               style={{
                 width: `${estrela.tamanho}px`,
                 height: `${estrela.tamanho}px`,
+                animationDelay: estrela.animationDelay,
               }}
             >
               <span className="photo-star-glow"></span>
@@ -360,33 +388,35 @@ export default function App() {
           display: flex;
           align-items: center;
           justify-content: center;
-          filter: drop-shadow(0 0 5px rgba(222, 235, 255, 0.9));
-          animation: photo-star-breathe 3.8s ease-in-out infinite;
+          opacity: 0.48;
+          filter: drop-shadow(0 0 2px rgba(205, 222, 248, 0.34));
+          animation: photo-star-breathe 4.6s ease-in-out infinite;
+          transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
         }
 
         .photo-star-glow {
           position: absolute;
-          width: 34%;
-          height: 34%;
+          width: 30%;
+          height: 30%;
           border-radius: 9999px;
-          background: rgba(244, 248, 255, 0.28);
+          background: rgba(232, 241, 255, 0.12);
           box-shadow:
-            0 0 9px 4px rgba(218, 232, 255, 0.26),
-            0 0 22px 10px rgba(165, 194, 235, 0.08);
+            0 0 6px 2px rgba(203, 222, 250, 0.12),
+            0 0 14px 5px rgba(154, 187, 232, 0.04);
           filter: blur(2px);
-          transition: all 0.45s ease;
+          transition: all 0.5s ease;
         }
 
         .photo-star-core {
           position: absolute;
-          width: 4px;
-          height: 4px;
+          width: 3px;
+          height: 3px;
           border-radius: 9999px;
-          background: #ffffff;
+          background: rgba(244, 248, 255, 0.9);
           box-shadow:
-            0 0 3px 1px rgba(255,255,255,0.98),
-            0 0 10px 3px rgba(222,235,255,0.86),
-            0 0 24px 7px rgba(171,201,241,0.35);
+            0 0 2px 1px rgba(255,255,255,0.58),
+            0 0 6px 2px rgba(205,224,251,0.36);
+          transition: all 0.5s ease;
         }
 
         .photo-star-ray {
@@ -395,7 +425,8 @@ export default function App() {
           top: 50%;
           transform-origin: center;
           border-radius: 9999px;
-          opacity: 0.78;
+          opacity: 0.34;
+          transition: opacity 0.5s ease;
         }
 
         .photo-star-ray-v {
@@ -429,20 +460,31 @@ export default function App() {
         }
 
         .photo-star-seen {
-          filter: drop-shadow(0 0 4px rgba(159, 190, 235, 0.68));
-          opacity: 0.7;
+          opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(220, 234, 255, 0.95));
         }
 
         .photo-star-seen .photo-star-core {
-          background: #d8e8ff;
+          width: 4px;
+          height: 4px;
+          background: #ffffff;
           box-shadow:
-            0 0 3px 1px rgba(216,232,255,0.92),
-            0 0 9px 3px rgba(153,190,239,0.5);
+            0 0 3px 1px rgba(255,255,255,1),
+            0 0 10px 3px rgba(217,233,255,0.94),
+            0 0 24px 7px rgba(157,194,244,0.38);
         }
 
         .photo-star-seen .photo-star-glow {
-          background: rgba(151, 185, 231, 0.16);
-          box-shadow: 0 0 10px 4px rgba(122, 166, 225, 0.13);
+          width: 38%;
+          height: 38%;
+          background: rgba(241, 247, 255, 0.3);
+          box-shadow:
+            0 0 10px 4px rgba(213, 230, 255, 0.3),
+            0 0 24px 10px rgba(147, 184, 235, 0.11);
+        }
+
+        .photo-star-seen .photo-star-ray {
+          opacity: 0.9;
         }
 
         .final-star {
@@ -524,8 +566,8 @@ export default function App() {
         }
 
         @keyframes photo-star-breathe {
-          0%, 100% { opacity: 0.78; transform: scale(0.96); }
-          50% { opacity: 1; transform: scale(1.04); }
+          0%, 100% { transform: scale(0.97); }
+          50% { transform: scale(1.035); }
         }
 
         @keyframes final-star-breathe {
