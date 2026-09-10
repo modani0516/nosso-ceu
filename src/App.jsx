@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, X, Heart } from 'lucide-react';
+import { X, Heart } from 'lucide-react';
 
 export default function App() {
   const [estrelasFundo, setEstrelasFundo] = useState([]);
@@ -11,20 +11,41 @@ export default function App() {
   useEffect(() => {
     const gerarEstrelasDeFundo = () => {
       const estrelas = [];
-      for (let i = 0; i < 80; i++) {
+
+      for (let i = 0; i < 220; i++) {
+        const chance = Math.random();
+        const size = chance > 0.97
+          ? Math.random() * 1.7 + 1.8
+          : chance > 0.82
+            ? Math.random() * 0.9 + 1
+            : Math.random() * 0.65 + 0.35;
+
+        const temperatura = Math.random();
+        const cor = temperatura > 0.88
+          ? 'rgba(255, 229, 190, 1)'
+          : temperatura < 0.16
+            ? 'rgba(205, 223, 255, 1)'
+            : 'rgba(245, 248, 255, 1)';
+
         estrelas.push({
           id: i,
           top: `${Math.random() * 100}%`,
           left: `${Math.random() * 100}%`,
-          size: Math.random() * 2 + 1, // Tamanho entre 1px e 3px
-          opacity: Math.random() * 0.8 + 0.2, // Opacidade variada
-          animationDuration: `${Math.random() * 3 + 2}s`, // Tempo de piscar
-          animationDelay: `${Math.random() * 2}s`
+          size,
+          opacity: Math.random() * 0.58 + 0.22,
+          cor,
+          halo: chance > 0.9 ? Math.random() * 7 + 3 : Math.random() * 2 + 0.5,
+          animationDuration: `${Math.random() * 5 + 4}s`,
+          animationDelay: `${Math.random() * 6}s`,
+          estrelaBrilhante: chance > 0.965,
         });
       }
+
       return estrelas;
     };
+
     setEstrelasFundo(gerarEstrelasDeFundo());
+
     // Animação inicial de fade-in da tela
     setTimeout(() => setAnimarEntrada(true), 100);
   }, []);
@@ -34,47 +55,47 @@ export default function App() {
   // =========================================================================
   const [estrelasFotos] = useState(() => {
     const base = [
-      { 
-        id: 1, 
-        top: '12%', 
-        left: '25%', 
+      {
+        id: 1,
+        top: '12%',
+        left: '25%',
         url: 'https://i.imgur.com/LHa0dc3.png',
         mensagem: 'Entregando felicidade pro nosso filhinho! 💖'
       },
-      { 
-        id: 2, 
-        top: '28%', 
-        left: '75%', 
+      {
+        id: 2,
+        top: '28%',
+        left: '75%',
         url: 'https://i.imgur.com/AgAlIkN.png',
         mensagem: 'O sorriso que me encanta. 🥺'
       },
-      { 
-        id: 3, 
-        top: '48%', 
-        left: '15%', 
+      {
+        id: 3,
+        top: '48%',
+        left: '15%',
         url: 'https://i.imgur.com/49e7w9B.png',
         mensagem: 'Cada dia ao seu lado é especial. 💛'
       },
-      { 
-        id: 4, 
-        top: '65%', 
-        left: '80%', 
+      {
+        id: 4,
+        top: '65%',
+        left: '80%',
         url: 'https://i.imgur.com/ZHivlFU.png',
         mensagem: 'Minha paz. 🪷'
       },
-      { 
-        id: 5, 
-        top: '82%', 
-        left: '35%', 
+      {
+        id: 5,
+        top: '82%',
+        left: '35%',
         url: 'https://i.imgur.com/1w2j5Ez.png',
         mensagem: 'Para sempre nós. 💗'
       }
     ];
 
-    // Retorna as estrelas adicionando um tamanho aleatório entre 15px e 40px
+    // Mantém os mesmos pontos interativos, com pequenas diferenças de brilho/tamanho
     return base.map(estrela => ({
       ...estrela,
-      tamanho: Math.floor(Math.random() * 26) + 15
+      tamanho: Math.floor(Math.random() * 8) + 24
     }));
   });
 
@@ -103,29 +124,44 @@ export default function App() {
   const todasVistas = fotosVistas.size === estrelasFotos.length;
 
   return (
-    // Container principal: fixo, tela cheia, fundo escuro degradê
-    <div className={`fixed inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 overflow-hidden transition-opacity duration-1000 ${animarEntrada ? 'opacity-100' : 'opacity-0'}`}>
-      
-      {/* Estrelas de fundo geradas aleatoriamente (Efeito visual) */}
+    // Container principal: fixo, tela cheia, céu noturno profundo
+    <div className={`fixed inset-0 overflow-hidden transition-opacity duration-1000 ${animarEntrada ? 'opacity-100' : 'opacity-0'}`}>
+
+      {/* Fundo com profundidade de um céu noturno real */}
+      <div className="absolute inset-0 night-sky-base pointer-events-none"></div>
+      <div className="absolute inset-0 milky-way pointer-events-none"></div>
+      <div className="absolute inset-0 night-haze pointer-events-none"></div>
+      <div className="absolute inset-0 night-vignette pointer-events-none"></div>
+
+      {/* Estrelas de fundo geradas aleatoriamente */}
       {estrelasFundo.map((estrela) => (
         <div
           key={estrela.id}
-          className="absolute rounded-full bg-white"
+          className={`absolute rounded-full real-star ${estrela.estrelaBrilhante ? 'real-star-bright' : ''}`}
           style={{
             top: estrela.top,
             left: estrela.left,
             width: `${estrela.size}px`,
             height: `${estrela.size}px`,
             opacity: estrela.opacity,
-            animation: `pulse ${estrela.animationDuration} infinite alternate`,
+            backgroundColor: estrela.cor,
+            boxShadow: `0 0 ${estrela.halo}px ${estrela.cor}`,
+            animationDuration: estrela.animationDuration,
             animationDelay: estrela.animationDelay,
           }}
-        />
+        >
+          {estrela.estrelaBrilhante && (
+            <>
+              <span className="star-flare star-flare-v"></span>
+              <span className="star-flare star-flare-h"></span>
+            </>
+          )}
+        </div>
       ))}
 
       {/* Título discreto no topo */}
       <div className="absolute top-6 left-0 right-0 text-center z-10 pointer-events-none">
-        <p className="text-indigo-200/60 text-sm tracking-widest font-light font-serif">
+        <p className="text-slate-200/55 text-sm tracking-[0.28em] font-light font-serif drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
           {todasVistas ? "O céu está completo" : "Toque nas estrelas..."}
         </p>
       </div>
@@ -136,44 +172,52 @@ export default function App() {
         return (
           <div
             key={estrela.id}
-            className="absolute z-20 cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-125"
+            className="absolute z-20 cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-500 hover:scale-125 group"
             style={{ top: estrela.top, left: estrela.left }}
             onClick={() => handleClickFoto(estrela)}
           >
-            {/* Efeito de brilho em volta da estrela */}
-            <div className={`absolute inset-0 rounded-full blur-md ${jaVista ? 'bg-indigo-400/30' : 'bg-yellow-100/40 animate-pulse'}`}></div>
-            <Star 
-              size={estrela.tamanho}
-              className={`relative ${jaVista ? 'text-indigo-300' : 'text-yellow-100'} drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]`} 
-              fill={jaVista ? "currentColor" : "none"} 
-              strokeWidth={jaVista ? 1 : 2}
-            />
+            {/* Estrela fotográfica: ponto luminoso + raios de difração */}
+            <div
+              className={`photo-star ${jaVista ? 'photo-star-seen' : ''}`}
+              style={{
+                width: `${estrela.tamanho}px`,
+                height: `${estrela.tamanho}px`,
+              }}
+            >
+              <span className="photo-star-glow"></span>
+              <span className="photo-star-ray photo-star-ray-v"></span>
+              <span className="photo-star-ray photo-star-ray-h"></span>
+              <span className="photo-star-ray photo-star-ray-d1"></span>
+              <span className="photo-star-ray photo-star-ray-d2"></span>
+              <span className="photo-star-core"></span>
+            </div>
           </div>
         );
       })}
 
       {/* A 6ª Estrela Especial (Aparece apenas se todasVistas for true) */}
-      <div 
+      <div
         className={`absolute z-20 cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ${todasVistas ? 'opacity-100 scale-100' : 'opacity-0 scale-0 pointer-events-none'}`}
         style={{ top: estrelaFinal.top, left: estrelaFinal.left }}
         onClick={handleClickFinal}
       >
-         <div className="absolute inset-0 bg-yellow-300 rounded-full blur-xl animate-ping opacity-60"></div>
-         <div className="absolute inset-0 bg-yellow-100 rounded-full blur-md animate-pulse"></div>
-         <Star 
-           size={64}
-           className="relative text-yellow-300 drop-shadow-[0_0_20px_rgba(253,224,71,1)]" 
-           fill="currentColor" 
-         />
+        <div className="final-star">
+          <span className="final-star-aura"></span>
+          <span className="final-star-ray final-star-ray-v"></span>
+          <span className="final-star-ray final-star-ray-h"></span>
+          <span className="final-star-ray final-star-ray-d1"></span>
+          <span className="final-star-ray final-star-ray-d2"></span>
+          <span className="final-star-core"></span>
+        </div>
       </div>
 
       {/* =========================================================================
           MODAIS (JANELAS FLUTUANTES)
           ========================================================================= */}
-      
+
       {/* Fundo escuro quando um modal está aberto */}
       {modalAtivo && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity"
           onClick={fecharModal}
         ></div>
@@ -183,16 +227,16 @@ export default function App() {
       {modalAtivo?.tipo === 'foto' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
           <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-white/20 pointer-events-auto w-full max-w-sm transform animate-in fade-in zoom-in duration-300 animate-float">
-            <button 
+            <button
               onClick={fecharModal}
               className="absolute -top-4 -right-4 bg-slate-800 text-white p-2 rounded-full shadow-lg hover:bg-slate-700 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden bg-slate-800">
-              <img 
-                src={modalAtivo.dados.url} 
-                alt="Nossa lembrança" 
+              <img
+                src={modalAtivo.dados.url}
+                alt="Nossa lembrança"
                 className="object-cover w-full h-full"
               />
             </div>
@@ -208,17 +252,17 @@ export default function App() {
       {modalAtivo?.tipo === 'final' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none">
           <div className="bg-gradient-to-br from-indigo-900/90 to-purple-900/90 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_50px_rgba(167,139,250,0.4)] border border-purple-300/30 pointer-events-auto w-full max-w-md transform animate-in fade-in zoom-in duration-500 text-center">
-             <button 
+            <button
               onClick={fecharModal}
               className="absolute top-4 right-4 text-purple-200 hover:text-white transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
-            
+
             <Heart className="w-12 h-12 text-pink-400 mx-auto mb-6 animate-pulse" fill="currentColor" />
-            
+
             <h1 className="text-2xl font-serif text-white mb-6 tracking-wide">Para meu amor</h1>
-            
+
             {/* =========================================================================
                 SEU TEXTO DE DECLARAÇÃO VAI AQUI
                 ========================================================================= */}
@@ -237,13 +281,264 @@ export default function App() {
         </div>
       )}
 
-      {/* CSS para as animações personalizadas */}
+      {/* CSS para o céu, estrelas e animações personalizadas */}
       <style dangerouslySetInnerHTML={{__html: `
+        .night-sky-base {
+          background:
+            radial-gradient(ellipse at 50% 115%, rgba(35, 57, 91, 0.54) 0%, rgba(10, 21, 39, 0.2) 35%, transparent 62%),
+            radial-gradient(circle at 82% 18%, rgba(28, 48, 82, 0.22) 0%, transparent 30%),
+            radial-gradient(circle at 18% 34%, rgba(17, 31, 58, 0.18) 0%, transparent 34%),
+            linear-gradient(180deg, #010207 0%, #02050d 28%, #040913 58%, #07111d 100%);
+        }
+
+        .milky-way {
+          inset: -24%;
+          opacity: 0.55;
+          transform: rotate(-17deg) scale(1.12);
+          filter: blur(20px);
+          background:
+            linear-gradient(
+              105deg,
+              transparent 27%,
+              rgba(105, 125, 158, 0.015) 34%,
+              rgba(152, 171, 198, 0.07) 43%,
+              rgba(212, 219, 229, 0.13) 49%,
+              rgba(133, 155, 190, 0.065) 55%,
+              rgba(63, 85, 121, 0.015) 63%,
+              transparent 71%
+            );
+        }
+
+        .night-haze {
+          opacity: 0.8;
+          background:
+            radial-gradient(ellipse at 65% 72%, rgba(69, 88, 118, 0.06) 0%, transparent 33%),
+            radial-gradient(ellipse at 29% 64%, rgba(77, 94, 125, 0.045) 0%, transparent 27%);
+        }
+
+        .night-vignette {
+          box-shadow: inset 0 0 160px 42px rgba(0, 0, 0, 0.58);
+          background: linear-gradient(180deg, rgba(0,0,0,0.16), transparent 22%, transparent 76%, rgba(0,0,0,0.13));
+        }
+
+        .real-star {
+          z-index: 2;
+          animation-name: natural-twinkle;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          will-change: opacity, transform;
+        }
+
+        .real-star-bright {
+          z-index: 3;
+        }
+
+        .star-flare {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          pointer-events: none;
+          transform: translate(-50%, -50%);
+          border-radius: 9999px;
+          background: linear-gradient(90deg, transparent, rgba(230, 239, 255, 0.7), transparent);
+          opacity: 0.45;
+        }
+
+        .star-flare-v {
+          width: 1px;
+          height: 8px;
+          background: linear-gradient(180deg, transparent, rgba(230, 239, 255, 0.72), transparent);
+        }
+
+        .star-flare-h {
+          width: 8px;
+          height: 1px;
+        }
+
+        .photo-star {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          filter: drop-shadow(0 0 5px rgba(222, 235, 255, 0.9));
+          animation: photo-star-breathe 3.8s ease-in-out infinite;
+        }
+
+        .photo-star-glow {
+          position: absolute;
+          width: 34%;
+          height: 34%;
+          border-radius: 9999px;
+          background: rgba(244, 248, 255, 0.28);
+          box-shadow:
+            0 0 9px 4px rgba(218, 232, 255, 0.26),
+            0 0 22px 10px rgba(165, 194, 235, 0.08);
+          filter: blur(2px);
+          transition: all 0.45s ease;
+        }
+
+        .photo-star-core {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          border-radius: 9999px;
+          background: #ffffff;
+          box-shadow:
+            0 0 3px 1px rgba(255,255,255,0.98),
+            0 0 10px 3px rgba(222,235,255,0.86),
+            0 0 24px 7px rgba(171,201,241,0.35);
+        }
+
+        .photo-star-ray {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform-origin: center;
+          border-radius: 9999px;
+          opacity: 0.78;
+        }
+
+        .photo-star-ray-v {
+          width: 1px;
+          height: 100%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(180deg, transparent, rgba(240,246,255,0.95), #fff, rgba(240,246,255,0.95), transparent);
+        }
+
+        .photo-star-ray-h {
+          width: 100%;
+          height: 1px;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(90deg, transparent, rgba(240,246,255,0.92), #fff, rgba(240,246,255,0.92), transparent);
+        }
+
+        .photo-star-ray-d1,
+        .photo-star-ray-d2 {
+          width: 72%;
+          height: 1px;
+          opacity: 0.28;
+          background: linear-gradient(90deg, transparent, rgba(222,235,255,0.85), transparent);
+        }
+
+        .photo-star-ray-d1 {
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .photo-star-ray-d2 {
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .photo-star-seen {
+          filter: drop-shadow(0 0 4px rgba(159, 190, 235, 0.68));
+          opacity: 0.7;
+        }
+
+        .photo-star-seen .photo-star-core {
+          background: #d8e8ff;
+          box-shadow:
+            0 0 3px 1px rgba(216,232,255,0.92),
+            0 0 9px 3px rgba(153,190,239,0.5);
+        }
+
+        .photo-star-seen .photo-star-glow {
+          background: rgba(151, 185, 231, 0.16);
+          box-shadow: 0 0 10px 4px rgba(122, 166, 225, 0.13);
+        }
+
+        .final-star {
+          position: relative;
+          width: 76px;
+          height: 76px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: final-star-breathe 3s ease-in-out infinite;
+        }
+
+        .final-star-aura {
+          position: absolute;
+          width: 70%;
+          height: 70%;
+          border-radius: 9999px;
+          background: rgba(255, 241, 194, 0.08);
+          box-shadow:
+            0 0 18px 8px rgba(255, 235, 171, 0.18),
+            0 0 45px 18px rgba(255, 215, 128, 0.08);
+          filter: blur(4px);
+        }
+
+        .final-star-core {
+          position: absolute;
+          width: 7px;
+          height: 7px;
+          border-radius: 9999px;
+          background: #fff8d6;
+          box-shadow:
+            0 0 5px 2px rgba(255,248,214,1),
+            0 0 14px 5px rgba(255,231,158,0.95),
+            0 0 35px 12px rgba(255,209,102,0.34);
+        }
+
+        .final-star-ray {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          border-radius: 9999px;
+          transform-origin: center;
+        }
+
+        .final-star-ray-v {
+          width: 1px;
+          height: 92%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(180deg, transparent, rgba(255,242,204,0.8), #fff8d6, rgba(255,242,204,0.8), transparent);
+        }
+
+        .final-star-ray-h {
+          width: 92%;
+          height: 1px;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(90deg, transparent, rgba(255,242,204,0.8), #fff8d6, rgba(255,242,204,0.8), transparent);
+        }
+
+        .final-star-ray-d1,
+        .final-star-ray-d2 {
+          width: 58%;
+          height: 1px;
+          opacity: 0.38;
+          background: linear-gradient(90deg, transparent, rgba(255,232,175,0.9), transparent);
+        }
+
+        .final-star-ray-d1 {
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .final-star-ray-d2 {
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        @keyframes natural-twinkle {
+          0%, 100% { transform: scale(0.94); filter: brightness(0.88); }
+          45% { transform: scale(1); filter: brightness(1); }
+          60% { transform: scale(1.08); filter: brightness(1.16); }
+        }
+
+        @keyframes photo-star-breathe {
+          0%, 100% { opacity: 0.78; transform: scale(0.96); }
+          50% { opacity: 1; transform: scale(1.04); }
+        }
+
+        @keyframes final-star-breathe {
+          0%, 100% { transform: scale(0.96); filter: brightness(0.95); }
+          50% { transform: scale(1.06); filter: brightness(1.15); }
+        }
+
         @keyframes float {
           0% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
           100% { transform: translateY(0px); }
         }
+
         .animate-float {
           animation: float 4s ease-in-out infinite;
         }
